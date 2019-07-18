@@ -23,7 +23,7 @@ services:
       labels:
         traefik.port: 8080
         traefik.frontend.rule: Host:$HOSTNAME
-        traefik.docker.network: traefik-net
+        traefik.docker.network: $TRAEFIK_NETWORK_NAME
 
 networks:
   traefik-net:
