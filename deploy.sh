@@ -1,9 +1,19 @@
 #!/bin/bash
+read_var() {
+    VAR=$(grep $1 $2 | xargs)
+    IFS="=" read -ra VAR <<< "$VAR"
+    echo ${VAR[1]}
+}
+
 STACK_DIR=$(basename "$PWD")
 STACK_NAME=${STACK_DIR//[-._]/}
+TRAEFIK_NETWORK_NAME=$(read_var TRAEFIK_NETWORK_NAME .env)
 
 stack_up () {
-    docker network create --driver=overlay traefik-net
+    IS_NETWORK_EXISTS=$(($(docker network ls -f name=traefik-net | wc -l) - 1))
+    if [[ $IS_NETWORK_EXISTS == 0 ]]; then
+        docker network create --driver=overlay $TRAEFIK_NETWORK_NAME
+    fi
     env $(cat .env | xargs) docker stack deploy -c docker-compose.yml $STACK_NAME
 }
 
@@ -31,4 +41,3 @@ case "$1" in
         stack_services;
         ;;
 esac
-
