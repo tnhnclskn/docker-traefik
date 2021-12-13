@@ -1,31 +1,26 @@
-version: '3'
-
-services:
-  traefik:
-    image: traefik:v1.7
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - traefik-net
-    ports:
-      - 80:80
-      - 443:443
-      - 8080:8080
-    command: --docker \
-             --docker.swarmMode \
-             --docker.domain=$HOSTNAME \
-             --docker.watch \
-             --api \
-             --entryPoints='Name:http Address::80' \
-             --entryPoints='Name:https Address::443 TLS' \
-             --defaultEntryPoints='http,https'
-    deploy:
-      labels:
-        traefik.port: 8080
-        traefik.frontend.rule: Host:$HOSTNAME
-        traefik.docker.network: $TRAEFIK_NETWORK_NAME
+version: "3"
 
 networks:
-  traefik-net:
-    external:
-      name: traefik-net
+    traefik:
+        external:
+            name: ${TRAEFIK_NETWORK}
+
+services:
+    traefik:
+        image: traefik
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./traefik.yml:/etc/traefik/traefik.yml
+            - ./config:/config
+        env_file:
+            - .env
+        networks:
+            - traefik
+        ports:
+            - 80:80
+            - 443:443
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.traefik.middlewares=vault@file
+            - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOSTNAME}`)
+            - traefik.http.services.traefik-service.loadbalancer.server.port=8080

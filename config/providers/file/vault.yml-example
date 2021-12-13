@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    vault:
+      basicAuth:
+        users:
+          - "tnhnclskn:{APACHE PASSWD}" 

@@ -1,0 +1,17 @@
+http:
+  routers:
+    example:
+      service: example-service
+      rule: Host(`example.test.com`)
+
+  serversTransports:
+    mytransport:
+      insecureSkipVerify: true
+
+  services:
+    example-service:
+      loadBalancer:
+        serversTransport: mytransport
+        servers:
+          - url: https://172.17.0.1:9090/
+        passHostHeader: true

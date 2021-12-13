@@ -1,0 +1,36 @@
+entryPoints:
+  web:
+    address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: :443
+    http:
+      tls:
+        certResolver: acmeresolver
+
+api:
+  insecure: true
+
+providers:
+  file:
+    directory: "/config/providers/file"
+    watch: true
+  docker:
+    exposedByDefault: false
+    endpoint: unix:///var/run/docker.sock
+    network: traefik-net
+    defaultRule: Host(`{{ normalize .Name }}.{{ env "TRAEFIK_MAINHOST" }}`)
+    # endpoint: tcp://10.10.10.10:2375
+
+certificatesResolvers:
+  acmeresolver:
+    acme:
+      email: "dnz1@tunahancaliskan.com"
+      storage: "/config/letsencrypt/acme.json"
+      httpChallenge:
+        entryPoint: web

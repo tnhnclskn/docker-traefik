@@ -7,13 +7,18 @@ read_var() {
 
 STACK_DIR=$(basename "$PWD")
 STACK_NAME=${STACK_DIR//[-._]/}
-TRAEFIK_NETWORK_NAME=$(read_var TRAEFIK_NETWORK_NAME .env)
+TRAEFIK_NETWORK=$(read_var TRAEFIK_NETWORK .env)
+
+network_up () {
+    IS_NETWORK_EXISTS=$(($(docker network ls -f name=${TRAEFIK_NETWORK} | wc -l) - 1))
+    if [[ $IS_NETWORK_EXISTS == 0 ]]; then
+        docker network create --driver=overlay $TRAEFIK_NETWORK
+    fi
+
+}
 
 stack_up () {
-    IS_NETWORK_EXISTS=$(($(docker network ls -f name=traefik-net | wc -l) - 1))
-    if [[ $IS_NETWORK_EXISTS == 0 ]]; then
-        docker network create --driver=overlay $TRAEFIK_NETWORK_NAME
-    fi
+    network_up;
     env $(cat .env | xargs) docker stack deploy -c docker-compose.yml $STACK_NAME
 }
 
